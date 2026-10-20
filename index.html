@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kasbon Warkop Abim</title>
+    
+    <meta name="theme-color" content="#4a2c11">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Warkop Abim">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3361/3361132.png">
+    
+    <!-- Dynamic PWA Manifest Placeholder -->
+    <link rel="manifest" id="manifest-placeholder">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #f5f0eb;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .bg-brown-800 { background-color: #4a2c11; }
+        .bg-brown-700 { background-color: #5c3818; }
+        .bg-brown-600 { background-color: #70441e; }
+        .bg-brown-100 { background-color: #f3ebe1; }
+        .text-brown-800 { color: #4a2c11; }
+        .border-brown-300 { border-color: #d1bfae; }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-down {
+            animation: slideDown 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start text-gray-800">
+
+    <div id="app" class="w-full max-w-md bg-white min-h-screen shadow-xl flex flex-col relative">
+        
+        <!-- AUTOMATIC PWA INSTALLATION BANNER -->
+        <div id="installBanner" class="hidden bg-gradient-to-r from-amber-500 to-amber-600 text-brown-800 p-3 text-xs flex justify-between items-center font-semibold shadow-md animate-slide-down border-b border-amber-600">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-mobile-screen-button text-lg text-brown-800"></i>
+                <div>
+                    <p class="font-bold">Install di Layar Utama HP?</p>
+                    <p class="text-[10px] text-brown-900 opacity-90">Buka aplikasi tanpa buka browser</p>
+                </div>
+            </div>
+            <button id="btnInstallApp" class="bg-brown-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-brown-700 active:scale-95 transition shadow">
+                <i class="fa-solid fa-download mr-1"></i> Install
+            </button>
+        </div>
+
+        <!-- HEADER -->
+        <header class="bg-brown-800 text-white p-4 flex justify-between items-center shadow-md">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-mug-hot text-amber-400 text-xl"></i>
+                <h1 class="font-bold text-lg tracking-wide">Kasbon Warkop Abim</h1>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="btnPwaGuide" class="text-xs bg-amber-500 hover:bg-amber-600 text-brown-800 font-bold px-2.5 py-1.5 rounded-md transition flex items-center gap-1 shadow-sm">
+                    <i class="fa-solid fa-circle-question"></i> Bantuan
+                </button>
+                <button id="btnLogout" class="hidden text-sm bg-red-600 hover:bg-red-700 text-white px-2.5 py-1.5 rounded-md transition shadow-sm">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 p-4 overflow-y-auto" id="mainContent">
+            <!-- Loading Spinner -->
+            <div id="loading" class="flex flex-col items-center justify-center h-64">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brown-800"></div>
+                <p class="mt-3 text-sm text-gray-600">Memuat data...</p>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div id="viewLogin" class="hidden flex flex-col justify-center h-full py-8">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-brown-100 rounded-full flex items-center justify-center mx-auto mb-3 text-brown-800 text-3xl shadow-inner">
+                        <i class="fa-solid fa-coffee"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-brown-800">Masuk Akun</h2>
+                    <p class="text-xs text-gray-500 mt-1">Kelola catatan kasbon pelanggan warkop</p>
+                </div>
+                
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Email</label>
+                        <input type="email" id="loginEmail" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-600 text-sm" placeholder="admin@warkop.com">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+                        <input type="password" id="loginPassword" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-600 text-sm" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full bg-brown-800 text-white py-2.5 rounded-lg font-semibold hover:bg-brown-700 active:scale-98 transition shadow">
+                        Masuk
+                    </button>
+                </form>
+            </div>
+
+            <!-- DASHBOARD -->
+            <div id="viewDashboard" class="hidden space-y-4">
+                <!-- STATS CARD -->
+                <div class="bg-brown-100 border border-brown-300 rounded-xl p-4 text-brown-800 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-600">Total Belum Lunas:</p>
+                    <h2 id="statTotalNominal" class="text-2xl font-extrabold my-1 text-brown-800">Rp 0</h2>
+                    <div class="border-t border-brown-300 my-2"></div>
+                    <div class="flex justify-between text-xs font-medium">
+                        <span class="text-amber-700"><i class="fa-solid fa-clock"></i> Belum Lunas: <b id="statBelumLunas">0</b> orang</span>
+                        <span class="text-green-700"><i class="fa-solid fa-circle-check"></i> Lunas: <b id="statLunas">0</b> orang</span>
+                    </div>
+                </div>
+
+                <!-- SEARCH & FILTER -->
+                <div class="space-y-2">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-sm"></i>
+                        <input type="text" id="searchInput" placeholder="Cari nama pelanggan..." class="w-full pl-9 pr-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-600">
+                    </div>
+                    <div class="flex space-x-2 text-xs">
+                        <button class="filter-btn px-3 py-1.5 rounded-full bg-brown-800 text-white" data-filter="Semua">Semua</button>
+                        <button class="filter-btn px-3 py-1.5 rounded-full bg-gray-200 text-gray-700" data-filter="Belum Lunas">Belum Lunas</button>
+                        <button class="filter-btn px-3 py-1.5 rounded-full bg-gray-200 text-gray-700" data-filter="Lunas">Lunas</button>
+                    </div>
+                </div>
+
+                <!-- LIST KASBON -->
+                <div id="kasbonList" class="space-y-2 pt-2">
+                    <!-- Items generated dynamically -->
+                </div>
+            </div>
+        </main>
+
+        <!-- FLOATING ADD BUTTON -->
+        <button id="btnOpenAddModal" class="hidden fixed bottom-6 right-6 md:absolute bg-brown-800 text-white px-4 py-3 rounded-full shadow-xl flex items-center space-x-2 hover:bg-brown-700 active:scale-95 transition z-40">
+            <i class="fa-solid fa-plus text-lg"></i>
+            <span class="font-semibold text-sm">Tambah Kasbon</span>
+        </button>
+
+        <!-- MODAL TAMBAH KASBON -->
+        <div id="addModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+                <h3 class="font-bold text-lg text-brown-800 flex items-center gap-2">
+                    <i class="fa-solid fa-file-circle-plus"></i> Tambah Kasbon Baru
+                </h3>
+                <form id="addKasbonForm" class="space-y-3">
+                    <input type="text" id="addNama" placeholder="Nama Pelanggan" required class="w-full p-2.5 border text-sm rounded-lg focus:ring-2 focus:ring-brown-600 outline-none">
+                    <input type="number" id="addNominal" placeholder="Nominal Hutang (Rp)" required class="w-full p-2.5 border text-sm rounded-lg focus:ring-2 focus:ring-brown-600 outline-none">
+                    <input type="text" id="addKeterangan" placeholder="Keterangan (Contoh: Kopi + Es Teh)" class="w-full p-2.5 border text-sm rounded-lg focus:ring-2 focus:ring-brown-600 outline-none">
+                    <div class="flex justify-end space-x-2 pt-2">
+                        <button type="button" id="btnCloseAddModal" class="px-4 py-2 text-xs border rounded-lg hover:bg-gray-50">Batal</button>
+                        <button type="submit" class="px-4 py-2 text-xs bg-brown-800 text-white rounded-lg font-semibold hover:bg-brown-700">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL BANTUAN & PANDUAN PWA -->
+        <div id="pwaModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-xl w-full max-w-md max-h-[85vh] flex flex-col p-5 space-y-4 overflow-hidden shadow-2xl">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="font-bold text-base text-brown-800 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-amber-600 text-xl"></i> Cara Install di HP
+                    </h3>
+                    <button id="btnClosePwaModal" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+                </div>
+
+                <div class="overflow-y-auto space-y-3 text-xs text-gray-700 pr-1">
+                    <div class="border border-green-300 bg-green-50 rounded-lg p-3 space-y-1.5">
+                        <p class="font-bold text-green-900 text-sm"><i class="fa-solid fa-check text-green-600 mr-1"></i> Aplikasi Sudah Online (GitHub Pages)</p>
+                        <p class="text-gray-700">Karena sudah di-host di GitHub dengan protokol HTTPS, tombol install otomatis akan berfungsi di browser HP Anda.</p>
+                    </div>
+
+                    <div class="border border-amber-300 bg-amber-50 rounded-lg p-3 space-y-1.5">
+                        <div class="flex items-center gap-2 text-amber-900 font-bold">
+                            <i class="fa-brands fa-chrome text-amber-600"></i> Pengguna Android (Chrome):
+                        </div>
+                        <p class="text-gray-600">Ketuk titik tiga <b>(⋮)</b> di sudut kanan atas Chrome, lalu pilih <b>"Tambahkan ke Layar Utama"</b> atau <b>"Install Aplikasi"</b>.</p>
+                    </div>
+
+                    <div class="border border-blue-300 bg-blue-50 rounded-lg p-3 space-y-1.5">
+                        <div class="flex items-center gap-2 text-blue-900 font-bold">
+                            <i class="fa-brands fa-apple text-blue-600"></i> Pengguna iPhone (Safari):
+                        </div>
+                        <p class="text-gray-600">Ketuk ikon tombol <b>Bagikan (Share)</b> di bagian bawah layar Safari, lalu pilih <b>"Add to Home Screen"</b>.</p>
+                    </div>
+                </div>
+
+                <button id="btnConfirmPwa" class="w-full py-2.5 bg-brown-800 text-white font-semibold text-xs rounded-lg hover:bg-brown-700 transition">
+                    Mengerti
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Dynamic PWA Manifest Generator
+        const manifestData = {
+            "name": "Kasbon Warkop Abim",
+            "short_name": "Warkop Abim",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#f5f0eb",
+            "theme_color": "#4a2c11",
+            "icons": [
+                {
+                    "src": "https://cdn-icons-png.flaticon.com/512/3361/3361132.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        };
+        const stringManifest = JSON.stringify(manifestData);
+        const blob = new Blob([stringManifest], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(blob);
+        document.getElementById('manifest-placeholder').setAttribute('href', manifestURL);
+
+        // Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                self.addEventListener('install', (e) => self.skipWaiting());
+                self.addEventListener('activate', (e) => self.clients.claim());
+                self.addEventListener('fetch', (e) => {});
+            `;
+            const swBlob = new Blob([swCode], { type: 'text/javascript' });
+            const swUrl = URL.createObjectURL(swBlob);
+            navigator.serviceWorker.register(swUrl).catch(() => {});
+        }
+
+        let deferredPrompt = null;
+        const installBanner = document.getElementById('installBanner');
+        const btnInstallApp = document.getElementById('btnInstallApp');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBanner.classList.remove('hidden');
+        });
+
+        btnInstallApp.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBanner.classList.add('hidden');
+                }
+                deferredPrompt = null;
+            } else {
+                document.getElementById('pwaModal').classList.remove('hidden');
+            }
+        });
+
+        // SUPABASE CONFIGURATION
+        const SUPABASE_URL = 'https://sfuhvxpgzwjzqzaevpbz.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_gFU7gTFiZwjM_X57tlPcAA_cfBTVn1-';
+        
+        if (typeof window.supabaseClient === 'undefined') {
+            window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
+        const supabaseClient = window.supabaseClient;
+
+        // GLOBAL STATE
+        let currentUser = null;
+        let kasbonData = [];
+        let activeFilter = 'Semua';
+
+        // DOM ELEMENTS
+        const loading = document.getElementById('loading');
+        const viewLogin = document.getElementById('viewLogin');
+        const viewDashboard = document.getElementById('viewDashboard');
+        const btnLogout = document.getElementById('btnLogout');
+        const btnOpenAddModal = document.getElementById('btnOpenAddModal');
+        const addModal = document.getElementById('addModal');
+        const btnCloseAddModal = document.getElementById('btnCloseAddModal');
+        const btnPwaGuide = document.getElementById('btnPwaGuide');
+        const pwaModal = document.getElementById('pwaModal');
+        const btnClosePwaModal = document.getElementById('btnClosePwaModal');
+        const btnConfirmPwa = document.getElementById('btnConfirmPwa');
+
+        btnPwaGuide.addEventListener('click', () => pwaModal.classList.remove('hidden'));
+        btnClosePwaModal.addEventListener('click', () => pwaModal.classList.add('hidden'));
+        btnConfirmPwa.addEventListener('click', () => pwaModal.classList.add('hidden'));
+
+        async function init() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                showDashboard();
+            } else {
+                showLogin();
+            }
+        }
+
+        function showLogin() {
+            loading.classList.add('hidden');
+            viewDashboard.classList.add('hidden');
+            btnOpenAddModal.classList.add('hidden');
+            btnLogout.classList.add('hidden');
+            viewLogin.classList.remove('hidden');
+        }
+
+        async function showDashboard() {
+            loading.classList.add('hidden');
+            viewLogin.classList.add('hidden');
+            viewDashboard.classList.remove('hidden');
+            btnOpenAddModal.classList.remove('hidden');
+            btnLogout.classList.remove('hidden');
+            await loadKasbonData();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loading.classList.remove('hidden');
+            viewLogin.classList.add('hidden');
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+                alert('Login Gagal: ' + error.message);
+                showLogin();
+            } else {
+                currentUser = data.user;
+                showDashboard();
+            }
+        });
+
+        btnLogout.addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            currentUser = null;
+            showLogin();
+        });
+
+        async function loadKasbonData() {
+            const { data, error } = await supabaseClient
+                .from('kasbon_warkop')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .order('id', { ascending: false });
+
+            if (!error) {
+                kasbonData = data || [];
+                renderUI();
+            }
+        }
+
+        function renderUI() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = kasbonData.filter(item => {
+                const matchName = (item.nama_pelanggan || '').toLowerCase().includes(searchVal);
+                const matchFilter = activeFilter === 'Semua' || item.status === activeFilter;
+                return matchName && matchFilter;
+            });
+
+            const totalNominal = kasbonData
+                .filter(i => i.status === 'Belum Lunas')
+                .reduce((sum, i) => sum + (parseFloat(i.nominal_hutang) || 0), 0);
+            const countBelum = kasbonData.filter(i => i.status === 'Belum Lunas').length;
+            const countLunas = kasbonData.filter(i => i.status === 'Lunas').length;
+
+            document.getElementById('statTotalNominal').innerText = `Rp ${totalNominal.toLocaleString('id-ID')}`;
+            document.getElementById('statBelumLunas').innerText = countBelum;
+            document.getElementById('statLunas').innerText = countLunas;
+
+            const listEl = document.getElementById('kasbonList');
+            listEl.innerHTML = '';
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `<p class="text-center text-xs text-gray-500 py-6">Tidak ada catatan kasbon.</p>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const isLunas = item.status === 'Lunas';
+                const el = document.createElement('div');
+                el.className = "bg-white p-3 border rounded-xl flex items-center justify-between shadow-sm hover:shadow transition";
+                
+                const namaEscaped = document.createElement('div');
+                namaEscaped.textContent = item.nama_pelanggan || '';
+                const ketEscaped = document.createElement('div');
+                ketEscaped.textContent = item.keterangan || '-';
+
+                el.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-white ${isLunas ? 'bg-green-500' : 'bg-amber-500'} shadow-sm">
+                            <i class="fa-solid ${isLunas ? 'fa-check' : 'fa-hand-holding-dollar'} text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm text-gray-800">${namaEscaped.innerHTML}</h4>
+                            <p class="text-xs text-gray-500">Rp ${Number(item.nominal_hutang).toLocaleString('id-ID')} • <span class="italic">${ketEscaped.innerHTML}</span></p>
+                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${isLunas ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${item.status}</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-1">
+                        <button onclick="toggleStatus(${item.id}, '${item.status}')" title="Ubah Status" class="text-xs p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                        </button>
+                        <button onclick="deleteKasbon(${item.id})" title="Hapus Kasbon" class="text-xs p-2 text-red-600 hover:bg-red-50 rounded-lg transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                listEl.appendChild(el);
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', renderUI);
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('bg-brown-800', 'text-white');
+                    b.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                e.target.classList.remove('bg-gray-200', 'text-gray-700');
+                e.target.classList.add('bg-brown-800', 'text-white');
+                activeFilter = e.target.dataset.filter;
+                renderUI();
+            });
+        });
+
+        btnOpenAddModal.addEventListener('click', () => addModal.classList.remove('hidden'));
+        btnCloseAddModal.addEventListener('click', () => addModal.classList.add('hidden'));
+
+        document.getElementById('addKasbonForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nama_pelanggan = document.getElementById('addNama').value;
+            const nominal_hutang = parseFloat(document.getElementById('addNominal').value);
+            const keterangan = document.getElementById('addKeterangan').value;
+
+            const { error } = await supabaseClient.from('kasbon_warkop').insert({
+                user_id: currentUser.id,
+                nama_pelanggan,
+                nominal_hutang,
+                keterangan,
+                status: 'Belum Lunas'
+            });
+
+            if (!error) {
+                addModal.classList.add('hidden');
+                document.getElementById('addKasbonForm').reset();
+                loadKasbonData();
+            } else {
+                alert('Gagal menambah kasbon: ' + error.message);
+            }
+        });
+
+        window.toggleStatus = async (id, currentStatus) => {
+            const newStatus = currentStatus === 'Belum Lunas' ? 'Lunas' : 'Belum Lunas';
+            await supabaseClient.from('kasbon_warkop').update({ status: newStatus }).eq('id', id);
+            loadKasbonData();
+        };
+
+        window.deleteKasbon = async (id) => {
+            await supabaseClient.from('kasbon_warkop').delete().eq('id', id);
+            loadKasbonData();
+        };
+
+        init();
+    </script>
+</body>
+</html>
